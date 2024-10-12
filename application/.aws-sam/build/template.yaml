@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'SAM Template for Upload and Download Files Using Cognito Authentication
+
+  '
+Parameters:
+  S3BucketName:
+    Description: S3 Bucket for download and upload files
+    Type: String
+    Default: fcfunck-demo-ai-user-files
+  CognitoUserPoolArn:
+    Description: Gognito User Pool ARN
+    Type: String
+    Default: arn:aws:cognito-idp:us-east-1:404849656849:userpool/us-east-1_LCgcvqzyI
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: python3.10
+Resources:
+  UploadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda-file-writter/src/handler.lambda_handler
+      Role:
+        Fn::GetAtt:
+        - LambdaExecutionRole
+        - Arn
+      Environment:
+        Variables:
+          BUCKET_NAME:
+            Ref: S3BucketName
+      Events:
+        UploadApi:
+          Type: Api
+          Properties:
+            Path: /files
+            Method: post
+            RestApiId:
+              Ref: ApiGateway
+            Auth:
+              Authorizer: CognitoAuthorizer
+      CodeUri: UploadFunction
+    Metadata:
+      SamResourceId: UploadFunction
+  DownloadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda-file-reader/src/handler.lambda_handler
+      Role:
+        Fn::GetAtt:
+        - LambdaExecutionRole
+        - Arn
+      Environment:
+        Variables:
+          BUCKET_NAME:
+            Ref: S3BucketName
+      Events:
+        DownloadApi:
+          Type: Api
+          Properties:
+            Path: /files
+            Method: get
+            RestApiId:
+              Ref: ApiGateway
+            Auth:
+              Authorizer: CognitoAuthorizer
+      CodeUri: DownloadFunction
+    Metadata:
+      SamResourceId: DownloadFunction
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn:
+              Ref: CognitoUserPoolArn
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: LambdaS3AccessPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:DeleteObject
+            Resource:
+              Fn::Sub: arn:aws:s3:::${S3BucketName}/private/*
+Outputs:
+  UploadApi:
+    Description: API Gateway endpoint for Upload
+    Value:
+      Fn::Sub: https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/files/
+  DownloadApi:
+    Description: API Gateway endpoint for Download
+    Value:
+      Fn::Sub: https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/files/

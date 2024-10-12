@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: > 
+  SAM Template for Upload and Download Files Using Cognito Authentication
+
+Parameters:
+  S3BucketName:
+    Description: S3 Bucket for download and upload files
+    Type: String
+    Default: fcfunck-demo-ai-user-files
+
+  CognitoUserPoolArn:
+    Description: Gognito User Pool ARN
+    Type: String
+    Default: arn:aws:cognito-idp:us-east-1:404849656849:userpool/us-east-1_LCgcvqzyI
+
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: python3.10
+
+Resources:  
+  ### Função Lambda para Upload ###
+  UploadFunction:
+    Type: AWS::Serverless::Function
+    Properties: 
+      Handler: lambda-file-writter/src/handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref S3BucketName
+      Events:
+        UploadApi:
+          Type: Api
+          Properties:
+            Path: /files
+            Method: post
+            RestApiId: !Ref ApiGateway
+            Auth:
+              Authorizer: CognitoAuthorizer
+  
+  ### Função Lambda para Download ###
+  DownloadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda-file-reader/src/handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref S3BucketName
+      Events:
+        DownloadApi:
+          Type: Api
+          Properties:
+            Path: /files
+            Method: get
+            RestApiId: !Ref ApiGateway
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ### Definir o API Gateway ###
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Ref CognitoUserPoolArn
+
+  ### Definir Role para as Lambdas ###
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaS3AccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:DeleteObject
+                Resource: !Sub "arn:aws:s3:::${S3BucketName}/private/*"
+
+Outputs:
+  UploadApi:
+    Description: "API Gateway endpoint for Upload"
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/files/"
+
+  DownloadApi:
+    Description: "API Gateway endpoint for Download"
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/files/"

@@ -1,0 +1,11 @@
+version = 0.1
+[dev.deploy.parameters]
+stack_name = "fcfunck-demoai"
+resolve_s3 = true
+s3_prefix = "fcfunck-demoai"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+parameter_overrides = "S3BucketName=\"fcfunck-demo-ai-user-files\" CognitoUserPoolArn=\"arn:aws:cognito-idp:us-east-1:404849656849:userpool/us-east-1_LCgcvqzyI\""
+image_repositories = []
