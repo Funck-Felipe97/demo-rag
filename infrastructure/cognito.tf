@@ -7,6 +7,25 @@ resource "aws_cognito_user_pool" "user_pool" {
 resource "aws_cognito_user_pool_client" "user_pool_client" {
   name         = var.user_pool_client_name
   user_pool_id = aws_cognito_user_pool.user_pool.id
+
+  allowed_oauth_flows_user_pool_client = true
+
+  # Configuração dos fluxos permitidos
+  allowed_oauth_flows = toset(var.allowed_oauth_flows)
+
+  # Escopos permitidos
+  allowed_oauth_scopes = toset(var.allowed_oauth_scopes)
+
+  # URLs de redirecionamento após autenticação
+  callback_urls = toset(var.callbacks_urls)
+
+  # Opcional: Tempo de expiração do token
+  access_token_validity   = 1  # 1 hora
+  id_token_validity       = 1  # 1 hora
+  refresh_token_validity  = 30  # 30 dias
+
+  # Se desejar, remover o secret para permitir que o app client funcione em SPAs
+  generate_secret = false  # Não gere client_secret para fluxos públicos
 }
 
 ### Criar o Amazon Cognito Identity Pool ###
@@ -79,4 +98,10 @@ resource "aws_cognito_identity_pool_roles_attachment" "identity_pool_roles" {
   roles = {
     authenticated = aws_iam_role.authenticated_role.arn
   }
+}
+
+# Cognito User Pool Domain
+resource "aws_cognito_user_pool_domain" "cognito_domain" {
+  domain      = var.domain_prefix
+  user_pool_id = aws_cognito_user_pool.user_pool.id
 }

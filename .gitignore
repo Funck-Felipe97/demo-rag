@@ -10,4 +10,17 @@ node_modules
 npm-debug.log
 dist
 out
+*.out
 syntaxes
+
+# Arquivos de deploy temporários
+samconfig.toml
+.template.yaml
+
+# Chaves e credenciais sensíveis
+*.pem
+*.key
+*.crt
+
+# Arquivos ZIP gerados para upload
+*.zip

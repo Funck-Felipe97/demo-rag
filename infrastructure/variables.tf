@@ -27,3 +27,28 @@ variable "cognito_role_name" {
   type        = string
   default     = "demo-ai-cognito-authenticated-role"
 }
+
+variable "domain_prefix" {
+  description = "Cognito Domain Prefix"
+  type        = string  
+  default     = "fcfunck-demo-ai"
+}
+
+variable "allowed_oauth_flows" {
+  description = "Allowed Oauth Flow"
+  type        = list(string)  
+  default     = ["implicit"]
+}
+
+variable "allowed_oauth_scopes" {
+  description = "Allowed Oauth Flow"
+  type        = list(string)  
+  default     = ["openid", "email", "phone"]
+}
+
+variable "callbacks_urls" {
+  description = "Callbacks URLs"
+  type        = list(string)  
+  default     = ["https://example.com"]
+}
+
