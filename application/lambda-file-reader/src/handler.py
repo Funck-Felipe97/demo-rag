@@ -1,9 +1,14 @@
 import json
 import os
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
-s3_client = boto3.client('s3')
+# Configurando a assinatura v4
+s3_config = Config(signature_version='s3v4')
+
+# Criando o cliente S3 com a assinatura configurada
+s3_client = boto3.client('s3', config=s3_config)
 
 def lambda_handler(event, context):
     try:
