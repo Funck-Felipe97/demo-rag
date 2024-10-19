@@ -12,6 +12,7 @@ dist
 out
 *.out
 syntaxes
+infrastructure/plan.out
 
 # Arquivos de deploy temporários
 samconfig.toml
@@ -24,3 +25,8 @@ samconfig.toml
 
 # Arquivos ZIP gerados para upload
 *.zip
+
+# Ignorar a pasta .aws-sam dentro de application/
+application/.aws-sam/
+application/.aws-sam/*
+application/samconfig.toml
