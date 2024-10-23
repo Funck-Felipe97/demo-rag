@@ -12,7 +12,7 @@ Parameters:
   CognitoUserPoolArn:
     Description: Gognito User Pool ARN
     Type: String
-    Default: arn:aws:cognito-idp:us-east-1:404849656849:userpool/us-east-1_LCgcvqzyI
+    Default: arn:aws:cognito-idp:us-east-1:404849656849:userpool/us-east-1_wB63E0eKa
 
 Globals:
   Function:
