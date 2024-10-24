@@ -7,4 +7,4 @@ phases:
     commands:
       - cd application
       - sam build
-      - sam deploy --stack-name fcfunck-demo-rag --no-confirm-changeset --no-fail-on-empty-changeset --resolve-s3
+      - sam deploy --stack-name fcfunck-demo-rag --no-confirm-changeset --no-fail-on-empty-changeset --resolve-s3 --capabilities CAPABILITY_IAM
