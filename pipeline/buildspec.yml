@@ -5,7 +5,7 @@ phases:
       python: 3.10
   build:
     commands:
-      - echo "Iniciando Build And Deploy"
+      - echo "Iniciando Build And Deploy..."
       - cd application
       - sam build
       - sam deploy --stack-name fcfunck-demo-rag --no-confirm-changeset --no-fail-on-empty-changeset --resolve-s3 --capabilities CAPABILITY_IAM
