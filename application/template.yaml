@@ -24,6 +24,7 @@ Resources:
   UploadFunction:
     Type: AWS::Serverless::Function
     Properties: 
+      FunctionName: lambda-file-writter
       Handler: lambda-file-writter/src/handler.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Environment:
@@ -43,6 +44,7 @@ Resources:
   DownloadFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: lambda-file-reader
       Handler: lambda-file-reader/src/handler.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Environment:
