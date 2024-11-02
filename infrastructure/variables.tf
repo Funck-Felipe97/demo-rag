@@ -52,3 +52,8 @@ variable "callbacks_urls" {
   default     = ["https://example.com"]
 }
 
+variable "user_files_tb_name" {
+  type = string
+  description = "User Files Table Name"
+  default = "UserFiles"
+}
