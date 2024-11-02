@@ -14,6 +14,11 @@ Parameters:
     Type: String
     Default: arn:aws:cognito-idp:us-east-1:404849656849:userpool/us-east-1_wB63E0eKa
 
+  UserFileTableName:
+    Description: DynamoDB User Files Table Name
+    Type: String
+    Default: UserFiles
+
 Globals:
   Function:
     Timeout: 10
@@ -60,6 +65,24 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  ### Função Lambda para Indexar Arquivos ###
+  IndexerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: lambda-file-indexer
+      Handler: lambda-file-indexer/src/handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref UserFileTableName
+      Events:
+        S3UploadEvent:
+          Type: S3
+          Properties:
+            Bucket: !Ref S3BucketName
+            Events: 
+              - s3:ObjectCreated:*
+            
   ### Definir o API Gateway ###
   ApiGateway:
     Type: AWS::Serverless::Api
@@ -92,6 +115,23 @@ Resources:
                   - s3:GetObject
                   - s3:DeleteObject
                 Resource: !Sub "arn:aws:s3:::${S3BucketName}/private/*"
+        - PolicyName: DynamoDBWriteAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${UserFileTableName}
+
+    ### Permissão para o S3 Invocar a Lambda ###
+  S3InvokeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref IndexerFunction
+      Action: "lambda:InvokeFunction"
+      Principal: "s3.amazonaws.com"
+      SourceArn: !Sub arn:aws:s3:::${S3BucketName}
 
 Outputs:
   UploadApi:
