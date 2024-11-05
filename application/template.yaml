@@ -76,13 +76,15 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref UserFileTableName
-      Events:
-        S3UploadEvent:
-          Type: S3
-          Properties:
-            Bucket: !Ref S3BucketName
-            Events: 
-              - s3:ObjectCreated:*
+
+  ### Permissão para o S3 Invocar a Lambda ###
+  S3InvokeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref IndexerFunction
+      Action: "lambda:InvokeFunction"
+      Principal: "s3.amazonaws.com"
+      SourceArn: !Sub arn:aws:s3:::${S3BucketName}
 
   ### Definir o API Gateway ###
   ApiGateway:
