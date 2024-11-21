@@ -70,7 +70,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: lambda-file-indexer
-      Handler: lambda-file-indexer/src/handler.lambda_handler
+      Handler: handler.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri: lambda-file-indexer/src
       Environment:
@@ -108,10 +108,29 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
+        - PolicyName: DynamoDBWriteAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${UserFileTableName}
+        - PolicyName: CloudWatchAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
         - PolicyName: LambdaS3AccessPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
+              # Permissões de acesso ao S3
               - Effect: Allow
                 Action:
                   - s3:PutObject
