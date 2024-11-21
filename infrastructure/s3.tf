@@ -66,3 +66,24 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
   bucket = aws_s3_bucket.user_files.id
   policy = data.aws_iam_policy_document.s3_policy.json
 }
+
+# Permissão para que o S3 invoque a função Lambda existente
+resource "aws_lambda_permission" "s3_invoke_lambda" {
+  statement_id  = "AllowS3InvokeLambda"
+  action        = "lambda:InvokeFunction"
+  function_name = var.lambda_indexer_arn
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.user_files.arn
+}
+
+# Configurando o evento de notificação do bucket S3
+resource "aws_s3_bucket_notification" "s3_bucket_notification" {
+  bucket = aws_s3_bucket.user_files.id
+
+  lambda_function {
+    lambda_function_arn = var.lambda_indexer_arn
+    events              = ["s3:ObjectCreated:*"]
+  }
+
+  depends_on = [aws_lambda_permission.s3_invoke_lambda]
+}

@@ -16,10 +16,12 @@ class UserFileService:
         logger.info(f"Trying to save user file, user_id: {user_id}, file_name: {file_name}")
 
         try:
-            self.table.put_item({
-                'user_id': user_id,
-                'file_name': file_name
-            })
+            self.table.put_item(
+                Item={
+                    'user_id': user_id,
+                    'file_name': file_name
+                }
+            )
 
             logger.addFilter("User file saved...")
         except ClientError as e:

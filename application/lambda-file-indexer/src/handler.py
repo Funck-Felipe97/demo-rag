@@ -7,7 +7,6 @@ logger.setLevel(logging.INFO)  # Nível de log pode ser alterado para DEBUG, WAR
 
 user_file_service = UserFileService()
 
-
 def lambda_handler(event, context):
     logger.info(f"Receiving lambda event: {event}")
 
@@ -18,7 +17,8 @@ def lambda_handler(event, context):
         
         logger.info(f"new file added: {bucket_name}/{object_key}")
 
-        user_id, file_name = object_key.split("/", 1)
+        user_id = object_key.split("/")[1]
+        file_name = object_key.split("/")[2]
 
         user_file_service.save(
             user_id=user_id,
