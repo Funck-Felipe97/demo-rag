@@ -57,3 +57,9 @@ variable "user_files_tb_name" {
   description = "User Files Table Name"
   default = "UserFiles"
 }
+
+variable "lambda_indexer_arn" {
+  type = string
+  description = "Arn do lambda indexer"
+  default = "arn:aws:lambda:us-east-1:404849656849:function:lambda-file-indexer"
+}
