@@ -65,6 +65,28 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
+  ### Função Lambda para Prompts AI ###
+  PromptFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: lambda-rag-chat
+      Handler: handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: lambda-rag-prompts/src
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref S3BucketName
+          TABLE_NAME: !Ref UserFileTableName
+      Events:
+        DownloadApi:
+          Type: Api
+          Properties:
+            Path: /prompts
+            Method: post
+            RestApiId: !Ref ApiGateway
+            Auth:
+              Authorizer: CognitoAuthorizer
+
   ### Função Lambda para Indexar Arquivos ###
   IndexerFunction:
     Type: AWS::Serverless::Function
@@ -108,13 +130,14 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: DynamoDBWriteAccess
+        - PolicyName: DynamoDBWriteAccessV2
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
                   - dynamodb:PutItem
+                  - dynamodb:Query
                 Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${UserFileTableName}
         - PolicyName: CloudWatchAccess
           PolicyDocument:
@@ -137,6 +160,16 @@ Resources:
                   - s3:GetObject
                   - s3:DeleteObject
                 Resource: !Sub "arn:aws:s3:::${S3BucketName}/private/*"
+        - PolicyName: BedrockAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # Permissões de acesso ao S3
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource: "*"
 
 Outputs:
   UploadApi:
